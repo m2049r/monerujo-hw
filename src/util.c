@@ -1,6 +1,7 @@
 /*
  * This file is part of the TREZOR project, https://trezor.io/
  *
+ * Copyright (C) 2018 m2049r <m2049r@monerujo.io>
  * Copyright (C) 2014 Pavol Rusnak <stick@satoshilabs.com>
  *
  * This library is free software: you can redistribute it and/or modify
@@ -20,9 +21,13 @@
 #include <libopencm3/cm3/scb.h>
 #include "util.h"
 
+// empirical magic number
+#define DELAY_FACTOR (HSE_VALUE/270000)
+
 inline void delay(uint32_t wait)
 {
-	while (--wait > 0) __asm__("nop");
+	uint32_t t = DELAY_FACTOR * wait;
+	while (--t > 0) __asm__("nop");
 }
 
 static const char *hexdigits = "0123456789ABCDEF";
@@ -43,29 +48,6 @@ void data2hex(const void *data, uint32_t len, char *str)
 		str[i * 2 + 1] = hexdigits[cdata[i] & 0xF];
 	}
 	str[len * 2] = 0;
-}
-
-uint32_t readprotobufint(uint8_t **ptr)
-{
-	uint32_t result = (**ptr & 0x7F);
-	if (**ptr & 0x80) {
-		(*ptr)++;
-		result += (**ptr & 0x7F) * 128;
-		if (**ptr & 0x80) {
-			(*ptr)++;
-			result += (**ptr & 0x7F) * 128 * 128;
-			if (**ptr & 0x80) {
-				(*ptr)++;
-				result += (**ptr & 0x7F) * 128 * 128 * 128;
-				if (**ptr & 0x80) {
-					(*ptr)++;
-					result += (**ptr & 0x7F) * 128 * 128 * 128 * 128;
-				}
-			}
-		}
-	}
-	(*ptr)++;
-	return result;
 }
 
 void __attribute__((noreturn)) system_halt(void)
