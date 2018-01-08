@@ -31,8 +31,8 @@
 int main(void)
 {
 	setup();
-	oledInit();
-	usbInit();
+	oled_setup();
+	usb_setup();
 
 	oledClear();
 	//oledDrawBitmap(42, 11, &bmp_logo64);
