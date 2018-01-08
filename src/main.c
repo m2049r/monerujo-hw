@@ -35,6 +35,7 @@ int main(void)
 	//oledDrawBitmap(42, 11, &bmp_logo64);
 
 	const char* hello = "Hello Monero world!\r\n";
+//	const char* hello = "0123456789ABCDEf0123456789ABCDEg0123456789ABCDEh0123456789ABCDEiX";
 				
 	while(1) {
 		

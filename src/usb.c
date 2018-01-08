@@ -23,9 +23,11 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/usb/cdc.h>
+#include <string.h>
 
 #include "usb.h"
 
+#define USB_MPS 64
 
 #define USB_STRINGS \
 	X(MANUFACTURER, "XMR_hw_wallet") \
@@ -52,7 +54,7 @@ static const struct usb_device_descriptor dev = {
 	.bDeviceClass = USB_CLASS_CDC,
 	.bDeviceSubClass = 0,
 	.bDeviceProtocol = 0,
-	.bMaxPacketSize0 = 64,
+	.bMaxPacketSize0 = USB_MPS,
 	.idVendor = 0xF055,
 	.idProduct = 0xC0DA,
 	.bcdDevice = 0x0200,
@@ -81,14 +83,14 @@ static const struct usb_endpoint_descriptor data_endp[] = {{
 	.bDescriptorType = USB_DT_ENDPOINT,
 	.bEndpointAddress = 0x01,
 	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
-	.wMaxPacketSize = 64,
+	.wMaxPacketSize = USB_MPS,
 	.bInterval = 1,
 }, {
 	.bLength = USB_DT_ENDPOINT_SIZE,
 	.bDescriptorType = USB_DT_ENDPOINT,
 	.bEndpointAddress = 0x82,
 	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
-	.wMaxPacketSize = 64,
+	.wMaxPacketSize = USB_MPS,
 	.bInterval = 1,
 }};
 
@@ -219,16 +221,28 @@ static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *
 	return 0;
 }
 
+static void cdcacm_data_tx_cb(usbd_device *usbd_dev, uint8_t ep)
+{
+	(void)ep;
+	(void)usbd_dev;
+
+	static i = 10;
+
+	if (i>0)
+		usbd_ep_write_packet(usbd_dev, 0x82, "X", 1);
+	i--;
+}
+
 static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
 {
 	(void)ep;
 	(void)usbd_dev;
 
-	char buf[64];
-	uint16_t len = usbd_ep_read_packet(usbd_dev, 0x01, buf, 64);
+	char buf[USB_MPS];
+	uint16_t len = usbd_ep_read_packet(usbd_dev, 0x01, buf, USB_MPS);
 
 	if (len) {
-		usbd_ep_write_packet(usbd_dev, 0x82, buf, len);
+		//usbd_ep_write_packet(usbd_dev, 0x82, buf, len);
 	}
 }
 
@@ -237,8 +251,8 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
 	(void)wValue;
 	(void)usbd_dev;
 
-	usbd_ep_setup(usbd_dev, 0x01, USB_ENDPOINT_ATTR_BULK, 64, cdcacm_data_rx_cb);
-	usbd_ep_setup(usbd_dev, 0x82, USB_ENDPOINT_ATTR_BULK, 64, NULL);
+	usbd_ep_setup(usbd_dev, 0x01, USB_ENDPOINT_ATTR_BULK, USB_MPS, cdcacm_data_rx_cb);
+	usbd_ep_setup(usbd_dev, 0x82, USB_ENDPOINT_ATTR_BULK, USB_MPS, cdcacm_data_tx_cb);
 	usbd_ep_setup(usbd_dev, 0x83, USB_ENDPOINT_ATTR_INTERRUPT, 16, NULL);
 
 	usbd_register_control_callback(
@@ -264,7 +278,9 @@ void usb_poll(void)
 	usbd_poll(usbd_dev);
 }
 
+#define min(X,Y) ((X) < (Y) ? (X) : (Y))
+
 void usb_write(const char* msg)
 {
-		usbd_ep_write_packet(usbd_dev, 0x82, msg, strlen(msg));
+	usbd_ep_write_packet(usbd_dev, 0x82, msg, strlen(msg));
 }
