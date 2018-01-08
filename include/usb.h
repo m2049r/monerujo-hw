@@ -1,7 +1,7 @@
 /*
- * This file is part of the TREZOR project, https://trezor.io/
+ * This file is part of monerujo-hw
  *
- * Copyright (C) 2014 Pavol Rusnak <stick@satoshilabs.com>
+ * Copyright (C) 2018 m2049r
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -20,7 +20,7 @@
 #ifndef __USB_H__
 #define __USB_H__
 
-void usbInit(void);
+void usb_setup(void);
 void usb_poll(void);
 
 #endif

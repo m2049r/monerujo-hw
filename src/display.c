@@ -119,7 +119,7 @@ void oledInvertPixel(int x, int y) {
 /*
  * Initialize the display.
  */
-void oledInit() {
+void oled_setup() {
 
 	static uint8_t initCommands[] = {
 	OLED_MEMORYMODE, 0x00, // Horizontal Addressing Mode
