@@ -221,16 +221,29 @@ static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *
 	return 0;
 }
 
+static struct {
+	char     buffer[1024];
+	uint16_t len;
+	uint16_t offset;
+} tx_buffer;
+
+#define min(X,Y) ((X) < (Y) ? (X) : (Y))
+
 static void cdcacm_data_tx_cb(usbd_device *usbd_dev, uint8_t ep)
 {
 	(void)ep;
 	(void)usbd_dev;
 
-	static i = 10;
-
-	if (i>0)
-		usbd_ep_write_packet(usbd_dev, 0x82, "X", 1);
-	i--;
+	if (tx_buffer.len) {
+		if (tx_buffer.offset >= tx_buffer.len) { // done sending - reset
+			tx_buffer.len = 0;
+			tx_buffer.offset = 0;
+			return;
+		}
+		uint16_t len = min(tx_buffer.len-tx_buffer.offset, USB_MPS);
+		usbd_ep_write_packet(usbd_dev, 0x82, tx_buffer.buffer+tx_buffer.offset, len);
+		tx_buffer.offset += len;
+	}
 }
 
 static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
@@ -278,9 +291,11 @@ void usb_poll(void)
 	usbd_poll(usbd_dev);
 }
 
-#define min(X,Y) ((X) < (Y) ? (X) : (Y))
-
 void usb_write(const char* msg)
 {
-	usbd_ep_write_packet(usbd_dev, 0x82, msg, strlen(msg));
+	size_t len = strlen(msg);
+	strncpy(tx_buffer.buffer, msg, len);
+	tx_buffer.len = len;
+	tx_buffer.offset = 0;
+	cdcacm_data_tx_cb(usbd_dev,0);
 }

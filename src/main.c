@@ -34,8 +34,19 @@ int main(void)
 	oledClear();
 	//oledDrawBitmap(42, 11, &bmp_logo64);
 
-	const char* hello = "Hello Monero world!\r\n";
-//	const char* hello = "0123456789ABCDEf0123456789ABCDEg0123456789ABCDEh0123456789ABCDEiX";
+//	const char* hello = "Hello Monero world!\r\n";
+	const char* hello = "0123456789ABCDEf0123456789ABCDEg0123456789ABCDEh0123456789ABCDEiX"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);";
 				
 	while(1) {
 		
