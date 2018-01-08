@@ -17,9 +17,6 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
-#include <libopencm3/usb/usbd.h>
-#include <libopencm3/usb/hid.h>
 #include <libopencm3/stm32/gpio.h>
 #include "bitmaps.h"
 #include "display.h"
@@ -36,6 +33,20 @@ int main(void)
 
 	oledClear();
 	//oledDrawBitmap(42, 11, &bmp_logo64);
+
+//	const char* hello = "Hello Monero world!\r\n";
+	const char* hello = "0123456789ABCDEf0123456789ABCDEg0123456789ABCDEh0123456789ABCDEiX"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);"
+			"oledBox(0,0,1000,1000,false);";
 				
 	while(1) {
 		
@@ -52,6 +63,7 @@ int main(void)
 		}
 		
 		if (!gpio_get(GPIOC, GPIO2)){
+			usb_write(hello);
 			oledSwipeRight();
 //			oledInvert(0,0,128,64);
 //			delay(1000);
