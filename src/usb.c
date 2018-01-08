@@ -260,22 +260,11 @@ void usb_setup(void)
 
 void usb_poll(void)
 {
-
-	//test string
-	const char* buf = "Hello Monero world!\r\n";
-
 	// poll read buffer
 	usbd_poll(usbd_dev);
-
-	if (!gpio_get(GPIOC, GPIO2)) {
-		//On button press send data to host
-		/*
-		 * try while device is connected:
-		 * sudo cat /dev/usb/hiddev2
-		 *
-		 * */
-		usbd_ep_write_packet(usbd_dev, 0x82, buf, strlen(buf));
-	}
-
 }
 
+void usb_write(const char* msg)
+{
+		usbd_ep_write_packet(usbd_dev, 0x82, msg, strlen(msg));
+}

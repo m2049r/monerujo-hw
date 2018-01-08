@@ -23,4 +23,6 @@
 void usb_setup(void);
 void usb_poll(void);
 
+void usb_write(const char* buf);
+
 #endif

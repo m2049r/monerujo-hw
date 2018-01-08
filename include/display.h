@@ -30,7 +30,8 @@
 #define OLED_HEIGHT  64
 #define OLED_BUFSIZE (OLED_WIDTH * OLED_HEIGHT / 8)
 
-void oledInit(void);
+void oled_setup(void);
+
 void oledClear(void);
 void oledRefresh(void);
 
