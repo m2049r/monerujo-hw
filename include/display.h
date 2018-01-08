@@ -34,18 +34,16 @@ void oledInit(void);
 void oledClear(void);
 void oledRefresh(void);
 
-void oledSetDebugLink(bool set);
-void oledSetBuffer(uint8_t *buf);
-const uint8_t *oledGetBuffer(void);
 void oledDrawPixel(int x, int y);
 void oledClearPixel(int x, int y);
 void oledInvertPixel(int x, int y);
 void oledDrawChar(int x, int y, char c, int zoom);
 int oledStringWidth(const char *text);
 
-#define oledDrawString(x, y, text) oledDrawStringSize((x),  (y), (text), 1)
+#define oledDrawString(x, y, text) oledDrawStringZoom((x),  (y), (text), 1)
 #define oledDrawStringDouble(x, y, text) oledDrawStringSize((x),  (y), (text), 2)
-void oledDrawStringSize(int x, int y, const char* text, int size);
+
+void oledDrawStringZoom(int x, int y, const char* text, int zoom);
 void oledDrawStringCenter(int y, const char* text);
 void oledDrawStringRight(int x, int y, const char* text);
 void oledDrawBitmap(int x, int y, const BITMAP *bmp);
@@ -56,8 +54,6 @@ void oledFrame(int x1, int y1, int x2, int y2);
 void oledSwipeLeft(void);
 void oledSwipeRight(void);
 
-char oledConvertChar(const char c);
-
-void SPISend(uint32_t base, uint8_t *data, int len);
+void SPISend(uint8_t *data, int len, bool isData);
 
 #endif

@@ -35,27 +35,29 @@ int main(void)
 	usbInit();
 
 	oledClear();
-	oledDrawBitmap(42, 11, &bmp_logo64);
+	//oledDrawBitmap(42, 11, &bmp_logo64);
 				
 	while(1) {
 		
 		usb_poll();
 		oledDrawBitmap(42, 11, &bmp_logo64);
+		//oledBox(0,0,1000,1000,false);
 		oledRefresh();
 		
 		if (!gpio_get(GPIOC, GPIO5)){
-			oledDrawBitmap(10, 11, &bmp_logo64);
-			oledSwipeRight();
-			oledDrawBitmap(70, 11, &bmp_logo64);
+//			oledDrawBitmap(10, 11, &bmp_logo64);
+//			oledSwipeRight();
+//			oledDrawBitmap(70, 11, &bmp_logo64);
 			oledSwipeLeft();
 		}
 		
 		if (!gpio_get(GPIOC, GPIO2)){
-			oledInvert(0,0,128,64);
-			delay(1000);
-			oledRefresh();
+			oledSwipeRight();
+//			oledInvert(0,0,128,64);
+//			delay(1000);
+//			oledRefresh();
 		}
-		oledClear();
+//		oledClear();
 	
 	}
 

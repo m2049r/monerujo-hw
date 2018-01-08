@@ -25,15 +25,11 @@
 
 #include "setup.h"
 
-//#include "rng.h"
-//#include "layout.h"
-
-
 void nmi_handler(void)
 {
 	// Clock Security System triggered NMI
 	if ((RCC_CIR & RCC_CIR_CSSF) != 0) {
-//		layoutDialog(&bmp_icon_error, NULL, NULL, NULL, "Clock instability", "detected.", NULL, "Please unplug", "the device.", NULL);
+		//	TODO: Clock instability
 		for (;;) {} // loop forever
 	}
 }
@@ -41,7 +37,6 @@ void nmi_handler(void)
 void setup(void)
 {
 	// set SCB_CCR STKALIGN bit to make sure 8-byte stack alignment on exception entry is in effect.
-	// This is not strictly necessary for the current TREZOR system.
 	// This is here to comply with guidance from section 3.3.3 "Binary compatibility with other Cortex processors"
 	// of the ARM Cortex-M3 Processor Technical Reference Manual.
 	// According to section 4.4.2 and 4.4.7 of the "STM32F10xxx/20xxx/21xxx/L1xxxx Cortex-M3 programming manual",
@@ -52,7 +47,7 @@ void setup(void)
 	struct rcc_clock_scale clock = rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_120MHZ];
 	rcc_clock_setup_hse_3v3(&clock);
 
-	// enable GPIO clock - A (oled), B(oled), C (buttons)
+	// enable GPIO clocks - A (oled), B(oled), C (buttons)
 	rcc_periph_clock_enable(RCC_GPIOA);
 	rcc_periph_clock_enable(RCC_GPIOB);
 	rcc_periph_clock_enable(RCC_GPIOC);
@@ -66,8 +61,6 @@ void setup(void)
 	// enable RNG
 	rcc_periph_clock_enable(RCC_RNG);
 	RNG_CR |= RNG_CR_RNGEN;
-	// to be extra careful and heed the STM32F205xx Reference manual, Section 20.3.1
-	// we don't use the first random number generated after setting the RNGEN bit in setup
 //	random32();
 
 	// enable CSS (Clock Security System)
