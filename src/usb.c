@@ -221,9 +221,10 @@ static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *
 	return 0;
 }
 
+#define TX_BUFFER_SIZE 1024
 static struct {
-	char     buffer[1024];
-	uint16_t len;
+	char     buffer[TX_BUFFER_SIZE];
+	size_t   len;
 	uint16_t offset;
 } tx_buffer;
 
@@ -294,7 +295,8 @@ void usb_poll(void)
 void usb_write(const char* msg)
 {
 	size_t len = strlen(msg);
-	strncpy(tx_buffer.buffer, msg, len);
+	strncpy(tx_buffer.buffer, msg, TX_BUFFER_SIZE-1);
+	tx_buffer.buffer[TX_BUFFER_SIZE] = 0;
 	tx_buffer.len = len;
 	tx_buffer.offset = 0;
 	cdcacm_data_tx_cb(usbd_dev,0);
