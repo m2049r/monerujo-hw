@@ -42,4 +42,6 @@ extern const BITMAP bmp_u2f_google;
 extern const BITMAP bmp_u2f_slushpool;
 extern const BITMAP bmp_u2f_yubico;
 
+extern const BITMAP bmp_monerujo_splash;
+
 #endif

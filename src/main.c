@@ -105,38 +105,28 @@ int main(void)
 	oled_setup();
 	usb_setup();
 
-	oledClear();
+	oledSplash(&bmp_monerujo_splash);
+	oledRefresh();
 
-	bool new = true;
+	bool newPress = true;
 
 	while(1) {
-
 		usb_poll();
-		oledDrawBitmap(42, 11, &bmp_logo64);
-		//oledBox(0,0,1000,1000,false);
-		oledRefresh();
 
 		if (!gpio_get(GPIOC, GPIO5)){
-//			oledDrawBitmap(10, 11, &bmp_logo64);
-//			oledSwipeRight();
-//			oledDrawBitmap(70, 11, &bmp_logo64);
 			oledSwipeLeft();
+			oledSplash(&bmp_monerujo_splash);
+			oledRefresh();
 		}
 
 		if (!gpio_get(GPIOC, GPIO2)){
-			if (new) {
+			if (newPress) {
 				generateWallet();
-				new = false;
+				newPress = false;
 			}
-//			oledSwipeRight();
-//			oledInvert(0,0,128,64);
-//			delay(1000);
-//			oledRefresh();
 		} else {
-			new = true;
+			newPress = true;
 		}
-//		oledClear();
-
 	}
 
 	return 0;
