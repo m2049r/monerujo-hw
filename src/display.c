@@ -266,6 +266,12 @@ void oledDrawBitmap(int x, int y, const BITMAP *bmp) {
 	}
 }
 
+void oledSplash(const BITMAP *bmp) {
+	if ((bmp->width != OLED_WIDTH) || (bmp->height != OLED_HEIGHT)) return;
+	memcpy(_oledBuffer, bmp->data, sizeof(_oledBuffer));
+}
+
+
 #define max(X,Y) ((X) > (Y) ? (X) : (Y))
 #define min(X,Y) ((X) < (Y) ? (X) : (Y))
 
