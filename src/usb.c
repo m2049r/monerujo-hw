@@ -292,8 +292,10 @@ void usb_poll(void)
 	usbd_poll(usbd_dev);
 }
 
+// blocking write to usb
 void usb_write(const char* msg)
 {
+	while (tx_buffer.len) usb_poll(); // wait for previous write to finish
 	size_t len = strlen(msg);
 	strncpy(tx_buffer.buffer, msg, TX_BUFFER_SIZE-1);
 	tx_buffer.buffer[TX_BUFFER_SIZE] = 0;
