@@ -1,8 +1,7 @@
 /*
- * This file is part of the TREZOR project, https://trezor.io/
+ * This file is part of monerujo-hw
  *
  * Copyright (C) 2018 m2049r <m2049r@monerujo.io>
- * Copyright (C) 2014 Pavol Rusnak <stick@satoshilabs.com>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,7 +17,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libopencm3/cm3/scb.h>
+#include <string.h>
 #include "util.h"
 
 // empirical magic number
@@ -30,24 +29,66 @@ inline void delay(uint32_t wait)
 	while (--t > 0) __asm__("nop");
 }
 
-static const char *hexdigits = "0123456789ABCDEF";
-
-void uint32hex(uint32_t num, char *str)
+#define FROMHEX_MAXLEN 70
+const uint8_t *fromhexBE(const char *str)
 {
-	for (uint32_t i = 0; i < 8; i++) {
-		str[i] = hexdigits[(num >> (28 - i * 4)) & 0xF];
+	static uint8_t buf[FROMHEX_MAXLEN];
+	size_t len = strlen(str) / 2;
+	if (len > FROMHEX_MAXLEN) len = FROMHEX_MAXLEN;
+	for (size_t i = 0; i < len; i++) {
+		int c = 0;
+		if (str[i * 2] >= '0' && str[i*2] <= '9') c += (str[i * 2] - '0') << 4;
+		if ((str[i * 2] & ~0x20) >= 'A' && (str[i*2] & ~0x20) <= 'F') c += (10 + (str[i * 2] & ~0x20) - 'A') << 4;
+		if (str[i * 2 + 1] >= '0' && str[i * 2 + 1] <= '9') c += (str[i * 2 + 1] - '0');
+		if ((str[i * 2 + 1] & ~0x20) >= 'A' && (str[i * 2 + 1] & ~0x20) <= 'F') c += (10 + (str[i * 2 + 1] & ~0x20) - 'A');
+		buf[len-i-1] = (uint8_t) c;
 	}
+	return buf;
 }
 
-// converts data to hexa
-void data2hex(const void *data, uint32_t len, char *str)
+#define TOHEX_MAXLEN (2*FROMHEX_MAXLEN)
+const char *tohexBE(uint8_t * in, size_t inlen)
 {
-	const uint8_t *cdata = (uint8_t *)data;
-	for (uint32_t i = 0; i < len; i++) {
-		str[i * 2    ] = hexdigits[(cdata[i] >> 4) & 0xF];
-		str[i * 2 + 1] = hexdigits[cdata[i] & 0xF];
+	static char buf[TOHEX_MAXLEN+1];
+    const char * hex = "0123456789abcdef";
+	size_t len = inlen * 2;
+	if (len > TOHEX_MAXLEN) len = TOHEX_MAXLEN;
+	for (size_t i = 0; i < len/2; i++) {
+        buf[len-1-2*i-1] = hex[(in[i]>>4) & 0xF];
+        buf[len-1-2*i-0] = hex[ in[i]     & 0xF];
+    }
+    buf[len] = 0;
+    return buf;
+}
+
+const uint8_t *fromhexLE(const char *str)
+{
+	static uint8_t buf[FROMHEX_MAXLEN];
+	size_t len = strlen(str) / 2;
+	if (len > FROMHEX_MAXLEN) len = FROMHEX_MAXLEN;
+	for (size_t i = 0; i < len; i++) {
+		int c = 0;
+		if (str[i * 2] >= '0' && str[i*2] <= '9') c += (str[i * 2] - '0') << 4;
+		if ((str[i * 2] & ~0x20) >= 'A' && (str[i*2] & ~0x20) <= 'F') c += (10 + (str[i * 2] & ~0x20) - 'A') << 4;
+		if (str[i * 2 + 1] >= '0' && str[i * 2 + 1] <= '9') c += (str[i * 2 + 1] - '0');
+		if ((str[i * 2 + 1] & ~0x20) >= 'A' && (str[i * 2 + 1] & ~0x20) <= 'F') c += (10 + (str[i * 2 + 1] & ~0x20) - 'A');
+		buf[i] = (uint8_t) c;
 	}
-	str[len * 2] = 0;
+	return buf;
+}
+
+const char *tohexLE(uint8_t * in, size_t inlen)
+{
+	static char buf[TOHEX_MAXLEN+1];
+    const char * hex = "0123456789abcdef";
+	size_t len = inlen * 2;
+	if (len > TOHEX_MAXLEN) len = TOHEX_MAXLEN;
+	for (size_t i = 0; i < len/2; i++) {
+        buf[2*i+0] = hex[(in[i]>>4) & 0xF];
+        buf[2*i+1] = hex[ in[i]     & 0xF];
+    }
+    buf[len] = 0;
+    return buf;
 }
 
 void __attribute__((noreturn)) system_halt(void)

@@ -223,9 +223,9 @@ static int cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *
 
 #define TX_BUFFER_SIZE 1024
 static struct {
-	char     buffer[TX_BUFFER_SIZE];
-	size_t   len;
-	uint16_t offset;
+	char   buffer[TX_BUFFER_SIZE];
+	size_t len;
+	size_t offset;
 } tx_buffer;
 
 #define min(X,Y) ((X) < (Y) ? (X) : (Y))
@@ -241,8 +241,8 @@ static void cdcacm_data_tx_cb(usbd_device *usbd_dev, uint8_t ep)
 			tx_buffer.offset = 0;
 			return;
 		}
-		uint16_t len = min(tx_buffer.len-tx_buffer.offset, USB_MPS);
-		usbd_ep_write_packet(usbd_dev, 0x82, tx_buffer.buffer+tx_buffer.offset, len);
+		size_t len = min(tx_buffer.len-tx_buffer.offset, USB_MPS);
+		usbd_ep_write_packet(usbd_dev, 0x82, tx_buffer.buffer+tx_buffer.offset, (uint16_t) len);
 		tx_buffer.offset += len;
 	}
 }

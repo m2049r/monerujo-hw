@@ -21,6 +21,7 @@
 #define __UTIL_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include <libopencm3/cm3/scb.h>
 #include <libopencm3/cm3/vector.h>
@@ -47,5 +48,12 @@ extern uint8_t _ram_start[], _ram_end[];
 // defined in startup.s
 extern void memset_reg(void *start, void *stop, uint32_t val);
 
+const uint8_t *fromhexLE(const char *str);
+const char *tohexLE(uint8_t * in, size_t inlen);
+const uint8_t *fromhexBE(const char *str);
+const char *tohexBE(uint8_t * in, size_t inlen);
+
+//void reverse(char s[]);
+//void itoa(int n, char s[]);
 
 #endif

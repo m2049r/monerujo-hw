@@ -1,7 +1,7 @@
 /*
- * This file is part of the TREZOR project, https://trezor.io/
+ * This file is part of monerujo-hw
  *
- * Copyright (C) 2014 Pavol Rusnak <stick@satoshilabs.com>
+ * Copyright (C) 2018 m2049r <m2049r@monerujo.io>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -23,6 +23,80 @@
 #include "setup.h"
 #include "usb.h"
 #include "util.h"
+#include <string.h>
+#include <stddef.h>
+#include "crypto/sha3.h"
+#include "crypto.h"
+#include "libopencm3/stm32/rng.h"
+
+#define fromhex(a) fromhexLE(a)
+#define tohex(a,b) tohexLE(a,b)
+
+#define KEYSIZE 32
+#define PUBSIZE (1+2*KEYSIZE+4)
+
+static void generateWallet(void) {
+	uint8_t spendkey[KEYSIZE];
+	uint8_t viewkey[KEYSIZE];
+
+	// for testing, override rng:
+	//memcpy(seed, fromhex("edb0479099a59b9fa2062ebc936c0170ab956303d84b8feba4dbd524ac5a3c49"), 32);
+
+	uint32_t rng_seed[8];
+	for (int i = 0; i < 8; i++) {
+		rng_seed[i] = rng_get_random_blocking();
+	}
+
+	uint8_t *seed = (uint8_t*) rng_seed;
+	usb_write("\r\nSeed:     ");
+	usb_write(tohex(seed, KEYSIZE));
+	// reduce to spendkey
+	memcpy(spendkey, seed, KEYSIZE);
+	reduce32(spendkey);
+	usb_write("\r\nSpendKey: ");
+	usb_write(tohex(spendkey, KEYSIZE));
+	// hash on the way to view key
+	keccak_256(spendkey, KEYSIZE, viewkey);
+	usb_write("\r\nViewKey: (");
+	usb_write(tohex(viewkey, KEYSIZE));
+	// reduce to view key
+	reduce32(viewkey);
+	usb_write(")\r\nViewKey:  ");
+	usb_write(tohex(viewkey, KEYSIZE));
+	usb_write("\r\n");
+
+	// make public spend key
+	uint8_t pubSpendkey[KEYSIZE];
+	publickey(pubSpendkey, spendkey);
+	// make public view key
+	uint8_t pubViewkey[KEYSIZE];
+	publickey(pubViewkey, viewkey);
+
+	usb_write("\r\nPSK: ");
+	usb_write(tohex(pubSpendkey, KEYSIZE));
+	usb_write("\r\nPVK: ");
+	usb_write(tohex(pubViewkey, KEYSIZE));
+	usb_write("\r\n");
+
+	// now build the public address
+	// (network byte = 0x12) + (32-byte public spend key) + (32-byte public view key) + (4-byte hash)
+	uint8_t address[PUBSIZE];
+	address[0] = 0x12;
+	memcpy(address+1, pubSpendkey, KEYSIZE);
+	memcpy(address+1+KEYSIZE, pubViewkey, KEYSIZE);
+	uint8_t hash[SHA3_256_DIGEST_LENGTH];
+	keccak_256(address, 2*KEYSIZE+1, hash);
+	memcpy(address+1+2*KEYSIZE, hash, 4);
+	usb_write("\r\nPUB: ");
+	usb_write(tohex(address, PUBSIZE));
+
+	// base58 it
+	char b58[200];
+	encode58(b58, address, PUBSIZE);
+	usb_write("\r\nB58: ");
+	usb_write(b58);
+	usb_write("\r\n");
+}
 
 
 int main(void)
@@ -32,45 +106,37 @@ int main(void)
 	usb_setup();
 
 	oledClear();
-	//oledDrawBitmap(42, 11, &bmp_logo64);
 
-//	const char* hello = "Hello Monero world!\r\n";
-	const char* hello = "0123456789ABCDEf0123456789ABCDEg0123456789ABCDEh0123456789ABCDEiX"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);"
-			"oledBox(0,0,1000,1000,false);";
-				
+	bool new = true;
+
 	while(1) {
-		
+
 		usb_poll();
 		oledDrawBitmap(42, 11, &bmp_logo64);
 		//oledBox(0,0,1000,1000,false);
 		oledRefresh();
-		
+
 		if (!gpio_get(GPIOC, GPIO5)){
 //			oledDrawBitmap(10, 11, &bmp_logo64);
 //			oledSwipeRight();
 //			oledDrawBitmap(70, 11, &bmp_logo64);
 			oledSwipeLeft();
 		}
-		
+
 		if (!gpio_get(GPIOC, GPIO2)){
-			usb_write(hello);
-			oledSwipeRight();
+			if (new) {
+				generateWallet();
+				new = false;
+			}
+//			oledSwipeRight();
 //			oledInvert(0,0,128,64);
 //			delay(1000);
 //			oledRefresh();
+		} else {
+			new = true;
 		}
 //		oledClear();
-	
+
 	}
 
 	return 0;
