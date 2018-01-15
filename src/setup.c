@@ -66,6 +66,12 @@ void setup(void)
 	// enable CSS (Clock Security System)
 	RCC_CR |= RCC_CR_CSSON;
 
+	// enable CRC
+	rcc_periph_clock_enable(RCC_CRC);
+
+	// reset CRC
+	crc_reset();
+
 	// set GPIO for buttons
 	gpio_mode_setup(GPIOC, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, GPIO2 | GPIO5);
 

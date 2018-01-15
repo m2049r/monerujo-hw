@@ -30,4 +30,5 @@ void reduce32(uint8_t *x);
 
 void publickey(uint8_t *pub, const uint8_t *sec);
 
+
 #endif /* CRYPTO_H_ */
