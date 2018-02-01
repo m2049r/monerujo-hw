@@ -3,7 +3,8 @@ Monerujo Firmware for [The Sekura Monero Hardware Wallet](https://github.com/mon
 
 ## Prerequisites
 - This is a [GNU MCU Eclipse](https://gnu-mcu-eclipse.github.io/) project
-- [libopencm3](https://github.com/libopencm3/libopencm3) in /opt
+- sudo apt-get install gcc-arm-none-eabi
+- [libopencm3](https://github.com/libopencm3/libopencm3) in /opt (don't forget to ```make``` there as well)
 - dfu-util to program the device over USB - see the sekura project for more details
 
 ## udev Rules
