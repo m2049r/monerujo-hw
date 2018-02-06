@@ -29,6 +29,8 @@
 #include "crypto.h"
 #include "libopencm3/stm32/rng.h"
 
+//#include "wordlist.h"
+
 #define fromhex(a) fromhexLE(a)
 #define tohex(a,b) tohexLE(a,b)
 
@@ -39,17 +41,27 @@ static void generateWallet(void) {
 	uint8_t spendkey[KEYSIZE];
 	uint8_t viewkey[KEYSIZE];
 
-	// for testing, override rng:
-	//memcpy(seed, fromhex("edb0479099a59b9fa2062ebc936c0170ab956303d84b8feba4dbd524ac5a3c49"), 32);
+
 
 	uint32_t rng_seed[8];
 	for (int i = 0; i < 8; i++) {
 		rng_seed[i] = rng_get_random_blocking();
 	}
 
-	uint8_t *seed = (uint8_t*) rng_seed;
+	uint8_t *seed = (uint8_t*) rng_seed;//why this is uint8_t when it is pointing to uint32_t?
+										//it is "bits & memory & array" stuff?
+
+	// for testing, override rng:  to fit example here:
+	// https://monero.stackexchange.com/questions/874/what-is-the-checksum-at-the-end-of-a-mnemonic-seed
+	memcpy(seed, fromhex("2f5f26c8d75bc043eeec32c813aa3e5ec426256e8daef38a1cf91040dab44b0f"), 32);
+
 	usb_write("\r\nSeed:     ");
 	usb_write(tohex(seed, KEYSIZE));
+
+	//mnemonic words
+	usb_write("\r\nMnemonic words:\r\n");
+	usb_write(bytes_to_words(seed, 32));
+
 	// reduce to spendkey
 	memcpy(spendkey, seed, KEYSIZE);
 	reduce32(spendkey);

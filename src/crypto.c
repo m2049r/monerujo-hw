@@ -20,6 +20,7 @@
 #include "crypto.h"
 #include "crypto/ed25519-donna.h"
 
+
 static const char alphabet[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 static const size_t alphabet_size = sizeof(alphabet) - 1;
 static const size_t encoded_block_sizes[] = {0, 2, 3, 5, 6, 7, 9, 10, 11};
