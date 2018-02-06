@@ -25,9 +25,11 @@
 #include "util.h"
 #include <string.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include "crypto/sha3.h"
 #include "crypto.h"
 #include "libopencm3/stm32/rng.h"
+#include "timer.h"
 
 #define fromhex(a) fromhexLE(a)
 #define tohex(a,b) tohexLE(a,b)
@@ -98,12 +100,35 @@ static void generateWallet(void) {
 	usb_write("\r\n");
 }
 
+static void perftest(void) {
+	uint8_t secretKey[KEYSIZE];
+
+	memcpy(secretKey, fromhex("656a322ec9540d85940229f612b3b3cd4fb20c9c461b2565104e61ec8bbab30d"), 32);
+
+	uint32_t t1 = system_millis;
+	for (int i = 0; i < 1000; i++) {
+		// make public spend key
+		uint8_t publicKey[KEYSIZE];
+		publickey(publicKey, secretKey);
+	}
+	uint32_t t2 = system_millis;
+
+	uint32_t t = t2 - t1;
+
+	char s[15];
+	itoa(t, s, 10);
+	usb_write("t= ");
+	usb_write(s);
+	usb_write("\r\n");
+}
+
 
 int main(void)
 {
 	setup();
 	oled_setup();
 	usb_setup();
+	timer_init();
 
 	oledSplash(&bmp_monerujo_splash);
 	oledRefresh();
@@ -114,9 +139,10 @@ int main(void)
 		usb_poll();
 
 		if (!gpio_get(GPIOC, GPIO5)){
-			oledSwipeLeft();
-			oledSplash(&bmp_monerujo_splash);
-			oledRefresh();
+			perftest();
+			//oledSwipeLeft();
+			//oledSplash(&bmp_monerujo_splash);
+			//oledRefresh();
 		}
 
 		if (!gpio_get(GPIOC, GPIO2)){
