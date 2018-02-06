@@ -22,6 +22,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/f2/rng.h>
+#include <libopencm3/stm32/crc.h>
 
 #include "setup.h"
 
@@ -65,6 +66,12 @@ void setup(void)
 
 	// enable CSS (Clock Security System)
 	RCC_CR |= RCC_CR_CSSON;
+
+	// enable CRC
+	rcc_periph_clock_enable(RCC_CRC);
+
+	// reset CRC
+	crc_reset();
 
 	// set GPIO for buttons
 	gpio_mode_setup(GPIOC, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP, GPIO2 | GPIO5);

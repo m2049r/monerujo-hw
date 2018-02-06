@@ -28,6 +28,8 @@
 #include "crypto/sha3.h"
 #include "crypto.h"
 #include "libopencm3/stm32/rng.h"
+#include <stdlib.h>
+#include "mnemonics/mnemonics.h"
 
 #define fromhex(a) fromhexLE(a)
 #define tohex(a,b) tohexLE(a,b)
@@ -39,17 +41,32 @@ static void generateWallet(void) {
 	uint8_t spendkey[KEYSIZE];
 	uint8_t viewkey[KEYSIZE];
 
-	// for testing, override rng:
-	//memcpy(seed, fromhex("edb0479099a59b9fa2062ebc936c0170ab956303d84b8feba4dbd524ac5a3c49"), 32);
-
 	uint32_t rng_seed[8];
 	for (int i = 0; i < 8; i++) {
 		rng_seed[i] = rng_get_random_blocking();
 	}
 
-	uint8_t *seed = (uint8_t*) rng_seed;
-	usb_write("\r\nSeed:     ");
+	uint8_t *seed = (uint8_t*) rng_seed; //why this is uint8_t when it is pointing to uint32_t?
+										 //it is "bits & memory & array" stuff?
+
+	// for testing, override rng:  to fit example here:
+	// https://monero.stackexchange.com/questions/874/what-is-the-checksum-at-the-end-of-a-mnemonic-seed
+	memcpy(seed, fromhex("2f5f26c8d75bc043eeec32c813aa3e5ec426256e8daef38a1cf91040dab44b0f"), 32);
+
+	usb_write("\r\nSeed: ");
 	usb_write(tohex(seed, KEYSIZE));
+
+	usb_write("\r\nMnemonics: ");
+	uint32_t mnemonics[25];
+	//TODO: check return value of bytes_to_words()
+	bytes_to_words(seed, KEYSIZE, mnemonics);
+	for (int i = 0; i < 25; i++) {
+		usb_write(mnemonic_word(mnemonics[i]));
+		if (i != 24)
+			usb_write(" ");
+	}
+	usb_write("\r\n");
+
 	// reduce to spendkey
 	memcpy(spendkey, seed, KEYSIZE);
 	reduce32(spendkey);
@@ -72,9 +89,9 @@ static void generateWallet(void) {
 	uint8_t pubViewkey[KEYSIZE];
 	publickey(pubViewkey, viewkey);
 
-	usb_write("\r\nPSK: ");
+	usb_write("\r\nPubSK: ");
 	usb_write(tohex(pubSpendkey, KEYSIZE));
-	usb_write("\r\nPVK: ");
+	usb_write("\r\nPubVK: ");
 	usb_write(tohex(pubViewkey, KEYSIZE));
 	usb_write("\r\n");
 
@@ -82,25 +99,24 @@ static void generateWallet(void) {
 	// (network byte = 0x12) + (32-byte public spend key) + (32-byte public view key) + (4-byte hash)
 	uint8_t address[PUBSIZE];
 	address[0] = 0x12;
-	memcpy(address+1, pubSpendkey, KEYSIZE);
-	memcpy(address+1+KEYSIZE, pubViewkey, KEYSIZE);
+	memcpy(address + 1, pubSpendkey, KEYSIZE);
+	memcpy(address + 1 + KEYSIZE, pubViewkey, KEYSIZE);
 	uint8_t hash[SHA3_256_DIGEST_LENGTH];
-	keccak_256(address, 2*KEYSIZE+1, hash);
-	memcpy(address+1+2*KEYSIZE, hash, 4);
+	keccak_256(address, 2 * KEYSIZE + 1, hash);
+	memcpy(address + 1 + 2 * KEYSIZE, hash, 4);
 	usb_write("\r\nPUB: ");
 	usb_write(tohex(address, PUBSIZE));
 
 	// base58 it
 	char b58[200];
 	encode58(b58, address, PUBSIZE);
-	usb_write("\r\nB58: ");
+	usb_write("\r\nPublic Address: ");
 	usb_write(b58);
 	usb_write("\r\n");
+
 }
 
-
-int main(void)
-{
+int main(void) {
 	setup();
 	oled_setup();
 	usb_setup();
@@ -110,16 +126,16 @@ int main(void)
 
 	bool newPress = true;
 
-	while(1) {
+	while (1) {
 		usb_poll();
 
-		if (!gpio_get(GPIOC, GPIO5)){
+		if (!gpio_get(GPIOC, GPIO5)) {
 			oledSwipeLeft();
 			oledSplash(&bmp_monerujo_splash);
 			oledRefresh();
 		}
 
-		if (!gpio_get(GPIOC, GPIO2)){
+		if (!gpio_get(GPIOC, GPIO2)) {
 			if (newPress) {
 				generateWallet();
 				newPress = false;
