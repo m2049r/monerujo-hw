@@ -1,7 +1,7 @@
 /*
  * This file is part of monerujo-hw
  *
- * Copyright (C) 2018 m2049r <m2049r@monerujo.io>
+ * Copyright (C) 2018 i_a, m2049r <m2049r@monerujo.io>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,16 +17,14 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CRYPTO_H_
-#define CRYPTO_H_
+#ifndef MNEMONICS_H_
+#define MNEMONICS_H_
 
-#include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 
-void encode58(char* res, const uint8_t* data, size_t size);
+bool bytes_to_words(uint8_t *key, uint8_t len, uint32_t *mnemonic_seed);
 
-void reduce32(uint8_t *x);
+const char* mnemonic_word(uint32_t word_idx);
 
-void publickey(uint8_t *pub, const uint8_t *sec);
-
-#endif /* CRYPTO_H_ */
+#endif /* MNEMONICS_H_ */

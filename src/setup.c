@@ -22,6 +22,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/f2/rng.h>
+#include <libopencm3/stm32/crc.h>
 
 #include "setup.h"
 
