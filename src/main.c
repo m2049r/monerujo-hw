@@ -51,7 +51,7 @@ static void generateWallet(void) {
 
 	// for testing, override rng:  to fit example here:
 	// https://monero.stackexchange.com/questions/874/what-is-the-checksum-at-the-end-of-a-mnemonic-seed
-	memcpy(seed, fromhex("2f5f26c8d75bc043eeec32c813aa3e5ec426256e8daef38a1cf91040dab44b0f"), 32);
+	//memcpy(seed, fromhex("2f5f26c8d75bc043eeec32c813aa3e5ec426256e8daef38a1cf91040dab44b0f"), 32);
 
 	usb_write("\r\nSeed: ");
 	usb_write(tohex(seed, KEYSIZE));
