@@ -23,6 +23,7 @@
 #include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/f2/rng.h>
 #include <libopencm3/stm32/crc.h>
+#include "libopencm3/stm32/rng.h"
 
 #include "setup.h"
 
@@ -61,8 +62,8 @@ void setup(void)
 
 	// enable RNG
 	rcc_periph_clock_enable(RCC_RNG);
-	RNG_CR |= RNG_CR_RNGEN;
-//	random32();
+	rng_enable();
+	rng_get_random_blocking();
 
 	// enable CSS (Clock Security System)
 	RCC_CR |= RCC_CR_CSSON;
