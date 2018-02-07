@@ -13,6 +13,7 @@
 
 MEMORY
 {
-  ram (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
-  rom (rx)  : ORIGIN = 0x08000000, LENGTH = 512K
+  ram_isr (xrw) : ORIGIN = 0x20000000, LENGTH = 512
+  ram (xrw)     : ORIGIN = 0x20000200, LENGTH = 128K - 512
+  rom (rx)      : ORIGIN = 0x08000000, LENGTH = 512K
 }

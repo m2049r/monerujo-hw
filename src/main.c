@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include "mnemonics/mnemonics.h"
 #include "timer.h"
+#include "button.h"
+#include "libopencm3/cm3/vector.h"
 
 #define fromhex(a) fromhexLE(a)
 #define tohex(a,b) tohexLE(a,b)
@@ -117,8 +119,6 @@ static void generateWallet(void) {
 
 }
 
-#include "button.h"
-
 button leftButton, rightButton;
 
 static void setup_buttons(void) {
@@ -133,6 +133,8 @@ static void swipe(void) {
 }
 
 int main(void) {
+	// point to the exception vector in flash even if "Embedded SRAM" boot mode (e.g. after DFU leave)
+	SCB_VTOR = (uint32_t) &vector_table;
 	setup();
 	oled_setup();
 	usb_setup();
