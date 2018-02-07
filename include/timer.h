@@ -1,7 +1,7 @@
 /*
- * This file is part of the TREZOR project, https://trezor.io/
+ * This file is part of monerujo-hw
  *
- * Copyright (C) 2016 Saleem Rashid <trezor@saleemrashid.com>
+ * Copyright (C) 2018 m2049r <m2049r@monerujo.io>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -22,12 +22,10 @@
 
 #include <stdint.h>
 
-/* 1 tick = 1 ms */
-extern volatile uint32_t system_millis;
-
-/* Screen timeout */
-extern uint32_t system_millis_lock_start;
-
 void timer_init(void);
+
+uint32_t millis(void);
+
+void systick_handler(void);
 
 #endif

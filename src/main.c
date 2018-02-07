@@ -30,6 +30,7 @@
 #include "libopencm3/stm32/rng.h"
 #include <stdlib.h>
 #include "mnemonics/mnemonics.h"
+#include "timer.h"
 
 #define fromhex(a) fromhexLE(a)
 #define tohex(a,b) tohexLE(a,b)
@@ -116,33 +117,38 @@ static void generateWallet(void) {
 
 }
 
+#include "button.h"
+
+button leftButton, rightButton;
+
+static void setup_buttons(void) {
+	button_setup(&leftButton, GPIOC, GPIO5);
+	button_setup(&rightButton, GPIOC, GPIO2);
+}
+
+static void swipe(void) {
+	oledSwipeLeft();
+	oledSplash(&bmp_monerujo_splash);
+	oledRefresh();
+}
+
 int main(void) {
 	setup();
 	oled_setup();
 	usb_setup();
+	setup_buttons();
+	timer_init();
 
 	oledSplash(&bmp_monerujo_splash);
 	oledRefresh();
 
-	bool newPress = true;
+	leftButton.pressed = swipe;
+	rightButton.pressed = generateWallet;
 
 	while (1) {
 		usb_poll();
-
-		if (!gpio_get(GPIOC, GPIO5)) {
-			oledSwipeLeft();
-			oledSplash(&bmp_monerujo_splash);
-			oledRefresh();
-		}
-
-		if (!gpio_get(GPIOC, GPIO2)) {
-			if (newPress) {
-				generateWallet();
-				newPress = false;
-			}
-		} else {
-			newPress = true;
-		}
+		button_poll(&leftButton);
+		button_poll(&rightButton);
 	}
 
 	return 0;

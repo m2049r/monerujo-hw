@@ -1,7 +1,7 @@
 /*
- * This file is part of the TREZOR project, https://trezor.io/
+ * This file is part of monerujo-hw
  *
- * Copyright (C) 2016 Saleem Rashid <trezor@saleemrashid.com>
+ * Copyright (C) 2018 m2049r <m2049r@monerujo.io>
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,49 +17,24 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "timer.h"
-
-#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/systick.h>
-#include <libopencm3/cm3/vector.h>
 
-/* 1 tick = 1 ms */
-volatile uint32_t system_millis;
-
-/* Screen timeout */
-uint32_t system_millis_lock_start;
-
-/*
- * Initialise the Cortex-M3 SysTick timer
- */
 void timer_init(void) {
-	system_millis = 0;
-
-	/*
-	 * MCU clock (120 MHz) as source
-	 *
-	 *     (120 MHz / 8) = 15 clock pulses
-	 *
-	 */
-	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
-	STK_CVR = 0;
-
-	/*
-	 * 1 tick = 1 ms @ 120 MHz
-	 *
-	 *     (15 clock pulses * 1000 ms) = 15000 clock pulses
-	 *
-	 * Send an interrupt every (N - 1) clock pulses
-	 */
-	systick_set_reload(14999);
-
-	/* SysTick as interrupt */
-	systick_interrupt_enable();
-
+	systick_set_frequency(1000, 120000000);
+	systick_clear();
 	systick_counter_enable();
+	systick_interrupt_enable();
 }
 
-void sys_tick_handler(void) {
-	system_millis++;
+static volatile uint32_t ticks;
+
+void sys_tick_handler() {
+	ticks++;
+}
+
+// return the system clock as milliseconds
+uint32_t millis() {
+	return ticks;
 }
