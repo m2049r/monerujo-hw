@@ -62,6 +62,7 @@ static void encode_block(char* res, const uint8_t* block, size_t size)
 #define FULL_BLOCK_SIZE 8
 #define FULL_ENCODED_BLOCK_SIZE encoded_block_sizes[FULL_BLOCK_SIZE]
 
+// TODO maybe add & check size of res
 void encode58(char* res, const uint8_t* data, size_t size)
 {
   if (!size) {
