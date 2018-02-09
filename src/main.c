@@ -104,7 +104,6 @@ static void generateWallet(void) {
 	usb_write("\r\nMnemonics: ");
 	//TODO: check return value of bytes_to_words()
 	bytes_to_words(seed, KEYSIZE, mnemonics);
-	mnemonics[0] = 1516;
 	for (int i = 0; i < MNEMONIC_WORDS; i++) {
 		usb_write(mnemonic_word(mnemonics[i]));
 		if (i != 24)
