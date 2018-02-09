@@ -40,6 +40,48 @@
 #define KEYSIZE 32
 #define PUBSIZE (1+2*KEYSIZE+4)
 
+button leftButton, rightButton;
+
+#define MNEMONIC_WORDS 25
+
+static uint32_t mnemonics[MNEMONIC_WORDS];
+static int currentWord;
+
+static void showWord(int idx) {
+	if ((idx < 0) || (idx >= 99))
+		return;
+	char n[3];
+	itoa(idx + 1, n, 10);
+	oledClear();
+	oledDrawStringZoom(0, 0, n, 2);
+	const char* word = mnemonic_word(mnemonics[idx]);
+	int y = (OLED_HEIGHT - FONT_HEIGHT) / 2;
+	int width = oledStringWidth(word);
+	if (2 * width <= OLED_WIDTH) {
+		int x = ( OLED_WIDTH - 2 * oledStringWidth(word)) / 2;
+		oledDrawStringZoom(x, y, word, 2);
+	} else {
+		oledDrawStringCenter(y, word);
+	}
+	oledRefresh();
+	usb_write(n);
+	usb_write(": ");
+	usb_write(mnemonic_word(mnemonics[idx]));
+	usb_write("\r\n");
+}
+
+static void nextWord(void) {
+	if (currentWord >= MNEMONIC_WORDS - 1)
+		return;
+	showWord(++currentWord);
+}
+
+static void prevWord(void) {
+	if (currentWord <= 0)
+		return;
+	showWord(--currentWord);
+}
+
 static void generateWallet(void) {
 	uint8_t spendkey[KEYSIZE];
 	uint8_t viewkey[KEYSIZE];
@@ -60,10 +102,10 @@ static void generateWallet(void) {
 	usb_write(tohex(seed, KEYSIZE));
 
 	usb_write("\r\nMnemonics: ");
-	uint32_t mnemonics[25];
 	//TODO: check return value of bytes_to_words()
 	bytes_to_words(seed, KEYSIZE, mnemonics);
-	for (int i = 0; i < 25; i++) {
+	mnemonics[0] = 1516;
+	for (int i = 0; i < MNEMONIC_WORDS; i++) {
 		usb_write(mnemonic_word(mnemonics[i]));
 		if (i != 24)
 			usb_write(" ");
@@ -117,19 +159,17 @@ static void generateWallet(void) {
 	usb_write(b58);
 	usb_write("\r\n");
 
+	oledClear();
+	oledDrawStringCenter(OLED_HEIGHT / 2, "Wallet generated!");
+	oledRefresh();
+	currentWord = -1;
+	leftButton.pressed = prevWord;
+	rightButton.pressed = nextWord;
 }
-
-button leftButton, rightButton;
 
 static void setup_buttons(void) {
 	button_setup(&leftButton, GPIOC, GPIO5);
 	button_setup(&rightButton, GPIOC, GPIO2);
-}
-
-static void swipe(void) {
-	oledSwipeLeft();
-	oledSplash(&bmp_monerujo_splash);
-	oledRefresh();
 }
 
 int main(void) {
@@ -141,10 +181,18 @@ int main(void) {
 	setup_buttons();
 	timer_init();
 
+	oledClear();
 	oledSplash(&bmp_monerujo_splash);
+//	oledDrawStringCenter(0, "ABCDEFGHIJKLM");
+//	oledDrawStringCenter(8, "NOPQRSTUVWXYZ");
+//	oledDrawStringCenter(16, "abcdefghijklm");
+//	oledDrawStringCenter(24, "nopqrstuvwxyz");
+//	oledDrawStringCenter(32, "0123456789");
+//	oledDrawStringCenter(40, "$`+-*/=%\"'#@&_()");
+//	oledDrawStringCenter(48, ",.:;?!\\|{}<>[]~^");
 	oledRefresh();
 
-	leftButton.pressed = swipe;
+	leftButton.pressed = NULL;
 	rightButton.pressed = generateWallet;
 
 	while (1) {
