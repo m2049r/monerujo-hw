@@ -174,7 +174,14 @@ int main(void) {
 	setup_buttons();
 	timer_init();
 
-	oledSplash(&bmp_monerujo_splash);
+	//oledSplash(&bmp_monerujo_splash);
+	oledDrawStringCenter(0,  "ABCDEFGHIJKLM");
+	oledDrawStringCenter(8,  "NOPQRSTUVWXYZ");
+	oledDrawStringCenter(16, "abcdefghijklm");
+	oledDrawStringCenter(24, "nopqrstuvwxyz");
+	oledDrawStringCenter(32, "0123456789");
+	oledDrawStringCenter(40, "$`+-*/=%\"'#@&_()");
+	oledDrawStringCenter(48, ",.:;?!\\|{}<>[]~^");
 	oledRefresh();
 
 	leftButton.pressed = NULL;
