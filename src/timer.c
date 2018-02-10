@@ -38,3 +38,16 @@ void sys_tick_handler() {
 uint32_t millis() {
 	return ticks;
 }
+
+void delay_ms(uint32_t t) {
+	uint32_t start, end;
+	start = millis();
+	end = start + t;
+	if (start < end) {
+		while ((millis() >= start) && (millis() < end))
+			;
+	} else {
+		while ((millis() >= start) || (millis() < end))
+			;
+	}
+}

@@ -34,6 +34,8 @@
 #include "button.h"
 #include "libopencm3/cm3/vector.h"
 
+#define NEXT_LINE (FONT_HEIGHT+2)
+
 #define fromhex(a) fromhexLE(a)
 #define tohex(a,b) tohexLE(a,b)
 
@@ -46,6 +48,47 @@ button leftButton, rightButton;
 
 static uint32_t mnemonics[MNEMONIC_WORDS];
 static int currentWord;
+static char public_address[200]; //TODO: correct size + check buffer size on creation
+
+static void showLeftButtonLabel(char* label) {
+	int x = 2;
+	int y = OLED_HEIGHT - 1 - FONT_HEIGHT - 1;
+	oledBox(x - 2, y - 2, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1, y + FONT_HEIGHT + 1 - 1, true);
+	oledDrawStringInverted(x, y, label);
+}
+
+static void showRightButtonLabel(char* label) {
+	int x = (OLED_WIDTH - 1) - oledStringWidth(label) - OLED_CHAR_SPACE;
+	int y = OLED_HEIGHT - 1 - FONT_HEIGHT - 1;
+	oledBox(x - 2, y - 2, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1, y + FONT_HEIGHT + 1 - 1, true);
+	oledDrawStringInverted(x, y, label);
+}
+
+static void nextWord(void);
+static void prevWord(void);
+
+static void showAddress(void) {
+	char myAddress[96]; // 95+terminator
+	oledClear();
+	int l = 0;
+	oledDrawStringCenter(l, "New Wallet Address");
+	l += (int) (1.5 * NEXT_LINE);
+	char* p = myAddress;
+	while (p < myAddress + sizeof(myAddress) - 1) {
+		strlcpy(myAddress, public_address, sizeof(myAddress));
+		char* q = myAddress + sizeof(myAddress) - 1; // point to terminator
+		while (oledStringWidth(p) > OLED_WIDTH) {
+			*(--q) = '\0';
+		}
+		// here we have a string pointed to by p which fits on the display
+		oledDrawStringCenter(l, p);
+		l += NEXT_LINE;
+		p = q; // where we stopped
+	}
+	oledRefresh();
+	rightButton.pressed = NULL;
+	leftButton.pressed = NULL;
+}
 
 static void showWord(int idx) {
 	if ((idx < 0) || (idx >= 99))
@@ -62,6 +105,19 @@ static void showWord(int idx) {
 		oledDrawStringZoom(x, y, word, 2);
 	} else {
 		oledDrawStringCenter(y, word);
+	}
+	if (idx > 0) {
+		showLeftButtonLabel(FONT_LEFT);
+		leftButton.pressed = prevWord;
+	} else {
+		leftButton.pressed = NULL;
+	}
+	if (idx < 24) {
+		showRightButtonLabel(FONT_RIGHT);
+		rightButton.pressed = nextWord;
+	} else {
+		showRightButtonLabel("DONE");
+		rightButton.pressed = showAddress;
 	}
 	oledRefresh();
 	usb_write(n);
@@ -152,17 +208,28 @@ static void generateWallet(void) {
 	usb_write(tohex(address, PUBSIZE));
 
 	// base58 it
-	char b58[200];
-	encode58(b58, address, PUBSIZE);
+	encode58(public_address, address, PUBSIZE);
 	usb_write("\r\nPublic Address: ");
-	usb_write(b58);
+	usb_write(public_address);
 	usb_write("\r\n");
 
 	oledClear();
-	oledDrawStringCenter(OLED_HEIGHT / 2, "Wallet generated!");
+	int l = 0;
+	oledDrawStringCenter(l, "Press right button to");
+	l += NEXT_LINE;
+	oledDrawStringCenter(l, "show seed words.");
+	l += NEXT_LINE;
+	oledDrawStringCenter(l, "You will NOT ");
+	l += NEXT_LINE;
+	oledDrawStringCenter(l, "see them again.");
+	l += NEXT_LINE;
+	oledDrawStringCenter(l, "Write them down.");
+	l += NEXT_LINE;
+	oledDrawStringCenter(l, "NOW");
+	showRightButtonLabel("SEED");
 	oledRefresh();
 	currentWord = -1;
-	leftButton.pressed = prevWord;
+	leftButton.pressed = NULL;
 	rightButton.pressed = nextWord;
 }
 
@@ -172,7 +239,7 @@ static void setup_buttons(void) {
 }
 
 int main(void) {
-	// point to the exception vector in flash even if "Embedded SRAM" boot mode (e.g. after DFU leave)
+// point to the exception vector in flash even if "Embedded SRAM" boot mode (e.g. after DFU leave)
 	SCB_VTOR = (uint32_t) &vector_table;
 	setup();
 	oled_setup();
@@ -182,13 +249,12 @@ int main(void) {
 
 	oledClear();
 	oledSplash(&bmp_monerujo_splash);
-//	oledDrawStringCenter(0, "ABCDEFGHIJKLM");
-//	oledDrawStringCenter(8, "NOPQRSTUVWXYZ");
-//	oledDrawStringCenter(16, "abcdefghijklm");
-//	oledDrawStringCenter(24, "nopqrstuvwxyz");
-//	oledDrawStringCenter(32, "0123456789");
-//	oledDrawStringCenter(40, "$`+-*/=%\"'#@&_()");
-//	oledDrawStringCenter(48, ",.:;?!\\|{}<>[]~^");
+	oledRefresh();
+	delay_ms(1000);
+	oledClear();
+	oledDrawStringCenter(16, "Press right button for");
+	oledDrawStringCenter(32, "new wallet");
+	showRightButtonLabel("NEW");
 	oledRefresh();
 
 	leftButton.pressed = NULL;

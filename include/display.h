@@ -31,6 +31,8 @@
 #define OLED_HEIGHT  64
 #define OLED_BUFSIZE (OLED_WIDTH * OLED_HEIGHT / 8)
 
+#define OLED_CHAR_SPACE 1
+
 void oled_setup(void);
 
 void oledClear(void);
@@ -39,13 +41,17 @@ void oledRefresh(void);
 void oledDrawPixel(int x, int y);
 void oledClearPixel(int x, int y);
 void oledInvertPixel(int x, int y);
-void oledDrawChar(int x, int y, char c, int zoom);
+void oledDrawChar_(int x, int y, char c, int zoom, bool inverted);
+#define oledDrawChar(x, y, c, zoom) oledDrawChar((x), (y), (c), (zoom), false)
+#define oledDrawCharInverted(x, y, c, zoom) oledDrawChar((x), (y), (c), (zoom), true)
 int oledStringWidth(const char *text);
 
+void oledDrawStringZoom_(int x, int y, const char* text, int zoom, bool inverted);
+#define oledDrawStringZoom(x, y, text, zoom) oledDrawStringZoom_((x), (y), (text), (zoom), false)
+#define oledDrawStringZoomInverted(x, y, text, zoom) oledDrawStringZoom_((x), (y), (text), (zoom), true)
 #define oledDrawString(x, y, text) oledDrawStringZoom((x),  (y), (text), 1)
-#define oledDrawStringDouble(x, y, text) oledDrawStringSize((x),  (y), (text), 2)
+#define oledDrawStringInverted(x, y, text) oledDrawStringZoomInverted((x),  (y), (text), 1)
 
-void oledDrawStringZoom(int x, int y, const char* text, int zoom);
 void oledDrawStringCenter(int y, const char* text);
 void oledDrawStringRight(int x, int y, const char* text);
 void oledDrawBitmap(int x, int y, const BITMAP *bmp);

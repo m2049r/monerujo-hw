@@ -22,6 +22,12 @@
 #define __FONTS_H__
 
 #include <stdint.h>
+#define FONT_MONERO "\x10"
+#define FONT_UP   "\x8b"
+#define FONT_DOWN "\x8a"
+#define FONT_LEFT "\x88"
+#define FONT_RIGHT "\x95"
+#define FONT_COPYRIGHT "\xa9"
 
 #define FONT_HEIGHT 8
 

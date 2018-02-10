@@ -28,4 +28,6 @@ uint32_t millis(void);
 
 void systick_handler(void);
 
+void delay_ms(uint32_t t);
+
 #endif
