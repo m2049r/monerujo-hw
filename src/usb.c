@@ -30,8 +30,8 @@
 #define USB_MPS 64
 
 #define USB_STRINGS \
-	X(MANUFACTURER, "XMR_hw_wallet") \
-	X(PRODUCT, "Monezor") \
+	X(MANUFACTURER, "Monerujo") \
+	X(PRODUCT, "Monerujo-HW") \
 	X(SERIAL_NUMBER, "DEMO")
 
 #define X(name, value) USB_STRING_##name,
