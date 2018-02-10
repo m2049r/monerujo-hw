@@ -198,7 +198,7 @@ void oledRefresh() {
 	SPISend(_oledBuffer, sizeof(_oledBuffer), true);
 }
 
-void oledDrawChar(int x, int y, char c, int zoom) {
+void oledDrawChar_(int x, int y, char c, int zoom, bool inverted) {
 	if (x >= OLED_WIDTH || y >= OLED_HEIGHT || y <= -FONT_HEIGHT) {
 		return;
 	}
@@ -214,33 +214,37 @@ void oledDrawChar(int x, int y, char c, int zoom) {
 		for (int yo = 0; yo < FONT_HEIGHT; yo++) {
 			if (char_data[xo] & (1 << (FONT_HEIGHT - 1 - yo))) {
 				if (zoom <= 1) {
-					oledDrawPixel(x + xo, y + yo);
+					if (!inverted)
+						oledDrawPixel(x + xo, y + yo);
+					else
+						oledClearPixel(x + xo, y + yo);
 				} else {
-					oledBox(x + xo * zoom, y + yo * zoom, x + (xo + 1) * zoom - 1, y + (yo + 1) * zoom - 1,
-					true);
+					oledBox(x + xo * zoom, y + yo * zoom, x + (xo + 1) * zoom - 1, y + (yo + 1) * zoom - 1, !inverted);
+
 				}
 			}
 		}
 	}
 }
 
+
 int oledStringWidth(const char *text) {
 	if (!text)
 		return 0;
 	int l = 0;
 	for (; *text; text++) {
-		l += fontCharWidth(*text) + 1;
+		l += fontCharWidth(*text) + OLED_CHAR_SPACE;
 	}
 	return l;
 }
 
-void oledDrawStringZoom(int x, int y, const char* text, int zoom) {
+void oledDrawStringZoom_(int x, int y, const char* text, int zoom, bool inverted) {
 	if (!text)
 		return;
 	int l = 0;
 	for (; *text; text++) {
-		oledDrawChar(x + l, y, *text, zoom);
-		l += zoom * (fontCharWidth(*text) + 1);
+		oledDrawChar_(x + l, y, *text, zoom, inverted);
+		l += zoom * (fontCharWidth(*text) + OLED_CHAR_SPACE);
 	}
 }
 
