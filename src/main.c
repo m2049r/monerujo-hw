@@ -48,6 +48,7 @@ button leftButton, rightButton;
 
 static uint32_t mnemonics[MNEMONIC_WORDS];
 static int currentWord;
+static char public_address[200]; //TODO: correct size + check buffer size on creation
 
 static void showLeftButtonLabel(char* label) {
 	int x = 2;
@@ -61,6 +62,32 @@ static void showRightButtonLabel(char* label) {
 	int y = OLED_HEIGHT - 1 - FONT_HEIGHT - 1;
 	oledBox(x - 2, y - 2, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1, y + FONT_HEIGHT + 1 - 1, true);
 	oledDrawStringInverted(x, y, label);
+}
+
+static void nextWord(void);
+static void prevWord(void);
+
+static void showAddress(void) {
+	char myAddress[96]; // 95+terminator
+	oledClear();
+	int l = 0;
+	oledDrawStringCenter(l, "New Wallet Address");
+	l += (int) (1.5 * NEXT_LINE);
+	char* p = myAddress;
+	while (p < myAddress + sizeof(myAddress) - 1) {
+		strlcpy(myAddress, public_address, sizeof(myAddress));
+		char* q = myAddress + sizeof(myAddress) - 1; // point to terminator
+		while (oledStringWidth(p) > OLED_WIDTH) {
+			*(--q) = '\0';
+		}
+		// here we have a string pointed to by p which fits on the display
+		oledDrawStringCenter(l, p);
+		l += NEXT_LINE;
+		p = q; // where we stopped
+	}
+	oledRefresh();
+	rightButton.pressed = NULL;
+	leftButton.pressed = NULL;
 }
 
 static void showWord(int idx) {
@@ -79,10 +106,19 @@ static void showWord(int idx) {
 	} else {
 		oledDrawStringCenter(y, word);
 	}
-	if (idx > 0)
+	if (idx > 0) {
 		showLeftButtonLabel(FONT_LEFT);
-	if (idx < 24)
+		leftButton.pressed = prevWord;
+	} else {
+		leftButton.pressed = NULL;
+	}
+	if (idx < 24) {
 		showRightButtonLabel(FONT_RIGHT);
+		rightButton.pressed = nextWord;
+	} else {
+		showRightButtonLabel("DONE");
+		rightButton.pressed = showAddress;
+	}
 	oledRefresh();
 	usb_write(n);
 	usb_write(": ");
@@ -172,10 +208,9 @@ static void generateWallet(void) {
 	usb_write(tohex(address, PUBSIZE));
 
 	// base58 it
-	char b58[200]; //TODO: correct size + check buffer size on creation
-	encode58(b58, address, PUBSIZE);
+	encode58(public_address, address, PUBSIZE);
 	usb_write("\r\nPublic Address: ");
-	usb_write(b58);
+	usb_write(public_address);
 	usb_write("\r\n");
 
 	oledClear();
@@ -194,17 +229,8 @@ static void generateWallet(void) {
 	showRightButtonLabel("SEED");
 	oledRefresh();
 	currentWord = -1;
-	leftButton.pressed = prevWord;
+	leftButton.pressed = NULL;
 	rightButton.pressed = nextWord;
-}
-
-static void showAddress(char* address) {
-	int l = 0;
-	oledDrawStringCenter(l, "Wallet generated!");
-	l += 2 * NEXT_LINE;
-	oledDrawStringCenter(l, "Press right button to");
-	l += NEXT_LINE;
-	oledDrawStringCenter(l, "show seed");
 }
 
 static void setup_buttons(void) {
