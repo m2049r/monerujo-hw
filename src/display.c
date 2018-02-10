@@ -250,8 +250,7 @@ void oledDrawStringCenter(int y, const char* text) {
 }
 
 void oledDrawStringRight(int x, int y, const char* text) {
-	x -= oledStringWidth(text);
-	oledDrawString(x, y, text);
+	oledDrawString(x - oledStringWidth(text), y, text);
 }
 
 void oledDrawBitmap(int x, int y, const BITMAP *bmp) {
@@ -267,10 +266,10 @@ void oledDrawBitmap(int x, int y, const BITMAP *bmp) {
 }
 
 void oledSplash(const BITMAP *bmp) {
-	if ((bmp->width != OLED_WIDTH) || (bmp->height != OLED_HEIGHT)) return;
+	if ((bmp->width != OLED_WIDTH) || (bmp->height != OLED_HEIGHT))
+		return;
 	memcpy(_oledBuffer, bmp->data, sizeof(_oledBuffer));
 }
-
 
 #define max(X,Y) ((X) > (Y) ? (X) : (Y))
 #define min(X,Y) ((X) < (Y) ? (X) : (Y))
@@ -343,7 +342,7 @@ void oledSwipeLeft(void) {
 		}
 
 		oledRefresh();
-		delay(1000000/OLED_WIDTH);
+		delay(1000000 / OLED_WIDTH);
 	}
 }
 
@@ -369,6 +368,6 @@ void oledSwipeRight(void) {
 		}
 
 		oledRefresh();
-		delay(1000000/OLED_WIDTH);
+		delay(1000000 / OLED_WIDTH);
 	}
 }

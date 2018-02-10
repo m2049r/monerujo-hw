@@ -63,6 +63,10 @@ static void showWord(int idx) {
 	} else {
 		oledDrawStringCenter(y, word);
 	}
+	if (idx > 0)
+		oledDrawString(8, OLED_HEIGHT - FONT_HEIGHT, FONT_LEFT);
+	if (idx < 24)
+		oledDrawString((OLED_WIDTH - 1 - 8) - oledStringWidth(FONT_RIGHT), OLED_HEIGHT - FONT_HEIGHT, FONT_RIGHT);
 	oledRefresh();
 	usb_write(n);
 	usb_write(": ");
@@ -189,6 +193,7 @@ int main(void) {
 //	oledDrawStringCenter(32, "0123456789");
 //	oledDrawStringCenter(40, "$`+-*/=%\"'#@&_()");
 //	oledDrawStringCenter(48, ",.:;?!\\|{}<>[]~^");
+//	oledDrawStringCenter(56, FONT_COPYRIGHT FONT_MONERO FONT_UP FONT_DOWN FONT_LEFT FONT_RIGHT);
 	oledRefresh();
 
 	leftButton.pressed = NULL;
