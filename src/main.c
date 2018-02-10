@@ -17,22 +17,23 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
 #include <libopencm3/stm32/gpio.h>
+#include "libopencm3/stm32/rng.h"
+#include "libopencm3/cm3/vector.h"
 #include "bitmaps.h"
 #include "display.h"
 #include "setup.h"
 #include "usb.h"
 #include "util.h"
-#include <string.h>
-#include <stddef.h>
 #include "crypto/sha3.h"
 #include "crypto.h"
-#include "libopencm3/stm32/rng.h"
-#include <stdlib.h>
-#include "mnemonics/mnemonics.h"
+#include "mnemonics.h"
 #include "timer.h"
 #include "button.h"
-#include "libopencm3/cm3/vector.h"
+#include "qrcode.h"
 
 #define NEXT_LINE (FONT_HEIGHT+2)
 
@@ -53,26 +54,49 @@ static char public_address[200]; //TODO: correct size + check buffer size on cre
 static void showLeftButtonLabel(char* label) {
 	int x = 2;
 	int y = OLED_HEIGHT - 1 - FONT_HEIGHT - 1;
-	oledBox(x - 2, y - 2, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1, y + FONT_HEIGHT + 1 - 1, true);
+	oledBox(x - 2, y - 3, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1 + 1, y + FONT_HEIGHT + 1 + 1, false);
+	oledBox(x - 2, y - 2, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1, y + FONT_HEIGHT + 1, true);
 	oledDrawStringInverted(x, y, label);
 }
 
 static void showRightButtonLabel(char* label) {
 	int x = (OLED_WIDTH - 1) - oledStringWidth(label) - OLED_CHAR_SPACE;
 	int y = OLED_HEIGHT - 1 - FONT_HEIGHT - 1;
-	oledBox(x - 2, y - 2, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1, y + FONT_HEIGHT + 1 - 1, true);
+	oledBox(x - 2, y - 3, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1 + 1, y + FONT_HEIGHT + 1 + 1, false);
+	oledBox(x - 2, y - 2, x + oledStringWidth(label) - OLED_CHAR_SPACE + 2 - 1, y + FONT_HEIGHT + 1, true);
 	oledDrawStringInverted(x, y, label);
 }
 
 static void nextWord(void);
 static void prevWord(void);
+static void showAddress(void);
+
+#define OLED_CONTRAST_QR 0
+
+#define MONERO_SCHEMA "monero:"
+
+static void showQrAddress(void) {
+	oledClear();
+	char* uri[95+7+1];
+	strcpy(uri, MONERO_SCHEMA);
+	strcat(uri, public_address);
+	if (!drawQrCode(uri)) {
+		oledDrawStringCenter(28, "QR CODE FAILED");
+	} else {
+		oledSetContrast(OLED_CONTRAST_QR);
+	}
+	showLeftButtonLabel("Address");
+	oledRefresh();
+	rightButton.pressed = NULL;
+	leftButton.pressed = showAddress;
+}
 
 static void showAddress(void) {
 	char myAddress[96]; // 95+terminator
 	oledClear();
 	int l = 0;
-	oledDrawStringCenter(l, "New Wallet Address");
-	l += (int) (1.5 * NEXT_LINE);
+	oledDrawStringCenter(l, "New Wallet Address:");
+	l += NEXT_LINE;
 	char* p = myAddress;
 	while (p < myAddress + sizeof(myAddress) - 1) {
 		strlcpy(myAddress, public_address, sizeof(myAddress));
@@ -85,8 +109,10 @@ static void showAddress(void) {
 		l += NEXT_LINE;
 		p = q; // where we stopped
 	}
+	showRightButtonLabel("QR");
+	oledSetContrast(OLED_CONTRAST_DEFAULT); // because we may be coming from the QR code
 	oledRefresh();
-	rightButton.pressed = NULL;
+	rightButton.pressed = showQrAddress;
 	leftButton.pressed = NULL;
 }
 
@@ -229,7 +255,7 @@ static void generateWallet(void) {
 	showRightButtonLabel("SEED");
 	oledRefresh();
 	currentWord = -1;
-	leftButton.pressed = NULL;
+	leftButton.pressed = showQrAddress;
 	rightButton.pressed = nextWord;
 }
 

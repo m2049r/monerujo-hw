@@ -31,6 +31,8 @@
 #define OLED_HEIGHT  64
 #define OLED_BUFSIZE (OLED_WIDTH * OLED_HEIGHT / 8)
 
+#define OLED_CONTRAST_DEFAULT (0x7f)
+
 #define OLED_CHAR_SPACE 1
 
 void oled_setup(void);
@@ -64,5 +66,7 @@ void oledSwipeLeft(void);
 void oledSwipeRight(void);
 
 void SPISend(uint8_t *data, int len, bool isData);
+
+void oledSetContrast(uint8_t level);
 
 #endif

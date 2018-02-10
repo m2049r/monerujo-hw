@@ -116,6 +116,13 @@ void oledInvertPixel(int x, int y) {
 	_oledBuffer[OLED_OFFSET(x, y)] ^= OLED_MASK(x, y);
 }
 
+void oledSetContrast(uint8_t level) {
+	static uint8_t commands[] = {
+			OLED_SETCONTRAST, 0};
+	commands[1] = level;
+	SPISend(commands, sizeof(commands), false);
+}
+
 /*
  * Initialize the display.
  */
@@ -124,6 +131,7 @@ void oled_setup() {
 	static uint8_t initCommands[] = {
 	OLED_MEMORYMODE, 0x00, // Horizontal Addressing Mode
 			OLED_CHARGEPUMP, 0x14, // enable charge pump
+			OLED_SETCONTRAST, OLED_CONTRAST_DEFAULT,
 			OLED_DISPLAYON };
 
 	/*
@@ -226,7 +234,6 @@ void oledDrawChar_(int x, int y, char c, int zoom, bool inverted) {
 		}
 	}
 }
-
 
 int oledStringWidth(const char *text) {
 	if (!text)
