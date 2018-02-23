@@ -10,7 +10,7 @@ Monerujo Firmware for [The Sekura Monero Hardware Wallet](https://github.com/mon
 ## udev Rules
 ```
 SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="df11", MODE="660", GROUP="plugdev"
-SUBSYSTEM=="usb", ATTR{idVendor}=="f055", ATTR{idProduct}=="c0da", MODE="660", GROUP="plugdev", ENV{ID_MM_DEVICE_IGNORE}="1"
+SUBSYSTEM=="usb", ATTR{idVendor}=="1209", ATTR{idProduct}=="c0da", MODE="660", GROUP="plugdev", ENV{ID_MM_DEVICE_IGNORE}="1"
 ```
 
 ## Programming
