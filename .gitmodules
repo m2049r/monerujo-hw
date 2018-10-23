@@ -1,0 +1,6 @@
+[submodule "firmware/libopencm3"]
+	path = firmware/libopencm3
+	url = https://github.com/libopencm3/libopencm3
+[submodule "libopencm3"]
+	path = libopencm3
+	url = https://github.com/libopencm3/libopencm3/
