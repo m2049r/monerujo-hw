@@ -83,7 +83,8 @@ static void showQrAddress(void) {
 	if (!drawQrCode(uri)) {
 		oledDrawStringCenter(28, "QR CODE FAILED");
 	} else {
-		oledSetContrast(OLED_CONTRAST_QR);
+		// Seems to not be needed?
+		//oledSetContrast(OLED_CONTRAST_QR);
 	}
 	showLeftButtonLabel("Address");
 	oledRefresh();
@@ -110,7 +111,6 @@ static void showAddress(void) {
 		p = q; // where we stopped
 	}
 	showRightButtonLabel("QR");
-	oledSetContrast(OLED_CONTRAST_DEFAULT); // because we may be coming from the QR code
 	oledRefresh();
 	rightButton.pressed = showQrAddress;
 	leftButton.pressed = NULL;
@@ -260,7 +260,7 @@ static void generateWallet(void) {
 }
 
 static void setup_buttons(void) {
-	button_setup(&leftButton, GPIOC, GPIO5);
+	button_setup(&leftButton, GPIOC, GPIO9);
 	button_setup(&rightButton, GPIOC, GPIO2);
 }
 
