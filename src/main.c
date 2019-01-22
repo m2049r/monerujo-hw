@@ -260,7 +260,7 @@ static void generateWallet(void) {
 }
 
 static void setup_buttons(void) {
-	button_setup(&leftButton, GPIOC, GPIO5);
+	button_setup(&leftButton, GPIOC, GPIO9);
 	button_setup(&rightButton, GPIOC, GPIO2);
 }
 
