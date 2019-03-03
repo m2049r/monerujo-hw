@@ -55,3 +55,13 @@ OPENCM3_DIR=libopencm3
 LDSCRIPT = monerujo.ld
 
 include libopencm3.target.mk
+
+noblock nonblock:
+	@printf "  Making an I/O nonblocking application (-nbl)\n"
+	@[ -f $(BINARY).bin ] && @mv $(BINARY).bin $(BINARY)-old.bin
+	@[ -f $(BINARY).elf ] && @mv $(BINARY).bin $(BINARY)-old.elf
+	@[ -f $(BINARY).hex ] && @mv $(BINARY).bin $(BINARY)-old.hex
+	@[ -e $(CPPFLAGS) ] && CPPFLAGS="-DNO_BLOCKING_IO" make all || CPPFLAGS="$(CPPFLAGS) -DNO_BLOCKING_IO" make all
+	@mv $(BINARY).bin $(BINARY)-nbl.bin
+	@mv $(BINARY).elf $(BINARY)-nbl.elf
+	@mv $(BINARY).hex $(BINARY)-nbl.hex

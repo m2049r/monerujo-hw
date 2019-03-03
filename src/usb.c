@@ -295,6 +295,9 @@ void usb_poll(void)
 // blocking write to usb
 void usb_write(const char* msg)
 {
+#ifdef NO_BLOCKING_IO
+	return; // completely short circuit to cancel all cases of blocking i/o
+#endif
 	while (tx_buffer.len) usb_poll(); // wait for previous write to finish
 	size_t len = strlen(msg);
 	strncpy(tx_buffer.buffer, msg, TX_BUFFER_SIZE-1);
