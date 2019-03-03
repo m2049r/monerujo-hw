@@ -29,7 +29,7 @@
 
 // CRC code which works adapted from https://community.st.com/thread/18626
 static uint32_t revbit(uint32_t data) {
-	asm("rbit r0,r0");
+	__asm__("rbit r0,r0");
 	return data;
 }
 
