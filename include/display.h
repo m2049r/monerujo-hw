@@ -32,6 +32,8 @@
 #define OLED_BUFSIZE (OLED_WIDTH * OLED_HEIGHT / 8)
 
 #define OLED_CONTRAST_DEFAULT (0x7f)
+#define OLED_CONTRAST_GOOD (0xcf)
+#define OLED_CONTRAST_MAX (0xff)
 
 #define OLED_CHAR_SPACE 1
 
