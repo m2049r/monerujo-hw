@@ -161,7 +161,7 @@ flash: $(BINARY).flash
 program: $(BINARY).program
 
 # Build targets for enduser products
-console:
+console: loclib
 	@printf "  Making an I/O nonblocking application (-con)\n"
 	@touch src/usb.c  # Validity of usb.o depends on product type
 	@make elf bin hex
@@ -169,7 +169,7 @@ console:
 	@mv $(BINARY).elf $(BINARY)-con.elf
 	@mv $(BINARY).hex $(BINARY)-con.hex
 
-noblock nonblock:
+noblock nonblock: loclib
 	@printf "  Making an I/O nonblocking application (-nbl)\n"
 	@touch src/usb.c  # Validity of usb.o depends on product type
 	@[ -e $(CPPFLAGS) ] && CPPFLAGS="-DNO_BLOCKING_IO" make elf bin hex || CPPFLAGS="$(CPPFLAGS) -DNO_BLOCKING_IO" make elf bin hex
