@@ -52,6 +52,6 @@ OBJS		+= src/qrcode/qrcodegen.o
 #OBJS		+= src/newCfileHere.
 
 OPENCM3_DIR=libopencm3
-LDSCRIPT = monerujo.ld
+LDSCRIPT = $(BINARY).ld
 
 include libopencm3.target.mk

@@ -248,7 +248,7 @@ print-%:
 
 clean:
 	@#printf "  CLEAN\n"
-	$(Q)$(RM) ./src/*.o *.o *.d ./src/*.d *.elf *.bin *.hex *.srec *.list *.map generated.* ${OBJS} ${OBJS:%.o:%.d}
+	$(Q)$(RM) *.o ./src/*.o ./src/*/*.o *.d ./src/*.d ./src/*/*.d *.elf *.bin *.hex *.srec *.list *.map generated.* ${OBJS} ${OBJS:%.o:%.d}
 
 libclean: loclib
 	$(Q)$(MAKE) -C $(OPENCM3_DIR) clean
