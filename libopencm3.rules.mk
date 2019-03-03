@@ -257,9 +257,14 @@ styleclean: $(STYLECHECKFILES:=.styleclean)
 ###########################
 # programming by dfu-util #
 ###########################
-%.program: %.bin
+%.program:
+	$(Q)if [ ".$(word 2, $(MAKECMDGOALS))" = . ]; then \
+		printf "######## ERROR ########\n"; \
+		printf "\tSupply a target argument (console|nonblock.)\n"; \
+		exit 1; \
+		fi
 	@printf "  FLASHING BY dfu-util   $<\n"
-	$(DFUUTIL) -a 0 -s 0x08000000:leave -D $(*).bin
+	$(DFUUTIL) -a 0 -s 0x08000000:leave -D `[ ".$(word 2, $(MAKECMDGOALS))" = ".nonblock" ] && echo -n $(*)-nbl.bin || echo -n $(*)-con.bin`
 
 ifeq ($(BMP_PORT),)
 ifeq ($(OOCD_FILE),)
