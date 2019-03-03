@@ -144,7 +144,7 @@ LDLIBS		+= -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
 .SECONDEXPANSION:
 .SECONDARY:
 
-all: elf bin hex
+all: lib elf bin hex
 
 elf: $(BINARY).elf
 bin: $(BINARY).bin
@@ -169,6 +169,23 @@ $(LDSCRIPT):
 else
 include $(OPENCM3_DIR)/mk/genlink-rules.mk
 endif
+
+# Ensure that the libopencm3(3) component exists, to manually
+# test for the correct location, type "make print-OPENCM3_DIR"
+loclib:
+	$(Q)if [ ! "`ls -A $(OPENCM3_DIR)`" ] ; then \
+		printf "######## ERROR ########\n"; \
+		printf "\tlibopencm3 is not initialized.\n"; \
+		printf "\tPlease run:\n"; \
+		printf "\t$$ git submodule init\n"; \
+		printf "\t$$ git submodule update\n"; \
+		printf "\tbefore running make.\n"; \
+		printf "######## ERROR ########\n"; \
+		exit 1; \
+		fi
+
+lib: loclib
+	$(Q)$(MAKE) -C $(OPENCM3_DIR)
 
 # Define a helper macro for debugging make errors online
 # you can type "make print-OPENCM3_DIR" and it will show you
@@ -215,6 +232,15 @@ print-%:
 clean:
 	@#printf "  CLEAN\n"
 	$(Q)$(RM) ./src/*.o *.o *.d ./src/*.d *.elf *.bin *.hex *.srec *.list *.map generated.* ${OBJS} ${OBJS:%.o:%.d}
+
+libclean: loclib
+	$(Q)$(MAKE) -C $(OPENCM3_DIR) clean
+
+%.libclean:
+	$(Q)if [ -d $* ]; then \
+		printf "  CLEAN   $*\n"; \
+		$(MAKE) -C $* clean OPENCM3_DIR=$(OPENCM3_DIR) || exit $?; \
+	fi;
 
 stylecheck: $(STYLECHECKFILES:=.stylecheck)
 styleclean: $(STYLECHECKFILES:=.styleclean)
@@ -271,6 +297,7 @@ else
 		   $(*).elf
 endif
 
-.PHONY: images clean stylecheck styleclean elf bin hex srec list program
+.PHONY: images clean stylecheck styleclean testlib \
+	lib elf bin hex srec list program
 
 -include $(OBJS:.o=.d)
