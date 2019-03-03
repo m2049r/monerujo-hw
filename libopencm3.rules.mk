@@ -173,12 +173,21 @@ endif
 # Ensure that the libopencm3(3) component exists, to manually
 # test for the correct location, type "make print-OPENCM3_DIR"
 loclib:
-	$(Q)if [ ! "`ls -A $(OPENCM3_DIR)`" ] ; then \
+	$(Q)if [ ! "`ls -A $(OPENCM3_DIR)`" ]; then \
 		printf "######## ERROR ########\n"; \
 		printf "\tlibopencm3 is not initialized.\n"; \
 		printf "\tPlease run:\n"; \
 		printf "\t$$ git submodule init\n"; \
 		printf "\t$$ git submodule update\n"; \
+		printf "\tbefore running make.\n"; \
+		printf "######## ERROR ########\n"; \
+		exit 1; \
+		fi
+	$(Q)if [ ! "`ls $(OPENCM3_DIR)/include/libopencm3/*/*/nvic.h`" ]; then \
+		printf "######## ERROR ########\n"; \
+		printf "\tlibopencm3 is not built.\n"; \
+		printf "\tPlease run:\n"; \
+		printf "\t$$ make -C $(OPENCM3_DIR)\n"; \
 		printf "\tbefore running make.\n"; \
 		printf "######## ERROR ########\n"; \
 		exit 1; \
