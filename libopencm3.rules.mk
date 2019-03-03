@@ -144,7 +144,8 @@ LDLIBS		+= -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
 .SECONDEXPANSION:
 .SECONDARY:
 
-all: elf bin hex
+all:
+	@printf "  Usage: Make console or nonblock to build a product\n"
 
 elf: $(BINARY).elf
 bin: $(BINARY).bin
@@ -159,6 +160,22 @@ flash: $(BINARY).flash
 ###########################
 program: $(BINARY).program
 
+# Build targets for enduser products
+console:
+	@printf "  Making an I/O nonblocking application (-con)\n"
+	@touch src/usb.c  # Validity of usb.o depends on product type
+	@make elf bin hex
+	@mv $(BINARY).bin $(BINARY)-con.bin
+	@mv $(BINARY).elf $(BINARY)-con.elf
+	@mv $(BINARY).hex $(BINARY)-con.hex
+
+noblock nonblock:
+	@printf "  Making an I/O nonblocking application (-nbl)\n"
+	@touch src/usb.c  # Validity of usb.o depends on product type
+	@[ -e $(CPPFLAGS) ] && CPPFLAGS="-DNO_BLOCKING_IO" make elf bin hex || CPPFLAGS="$(CPPFLAGS) -DNO_BLOCKING_IO" make elf bin hex
+	@mv $(BINARY).bin $(BINARY)-nbl.bin
+	@mv $(BINARY).elf $(BINARY)-nbl.elf
+	@mv $(BINARY).hex $(BINARY)-nbl.hex
 
 # Either verify the user provided LDSCRIPT exists, or generate it.
 ifeq ($(strip $(DEVICE)),)
