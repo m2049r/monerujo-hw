@@ -21,6 +21,11 @@
 #include "util.h"
 
 // empirical magic number
+#if WERE_USING_ECLIPSE
+// HSE_VALUE is taken from config
+#else
+#define HSE_VALUE 8000000
+#endif
 #define DELAY_FACTOR (HSE_VALUE/270000)
 
 inline void delay(uint32_t wait)
