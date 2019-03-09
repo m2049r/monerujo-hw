@@ -281,8 +281,15 @@ static usbd_device *usbd_dev;
 void usb_setup(void)
 {
 	// setup of ports was done in setup.c
+#ifdef STM32F2
 	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings,
 			3, usbd_control_buffer, sizeof(usbd_control_buffer));
+#elif defined STM32L4
+	usbd_dev = usbd_init(&st_usbfs_v2_usb_driver, &dev, &config, usb_strings,
+			3, usbd_control_buffer, sizeof(usbd_control_buffer));
+#else
+	error "STM32 family not defined or not supported."
+#endif
 	usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
 }
 
@@ -295,6 +302,9 @@ void usb_poll(void)
 // blocking write to usb
 void usb_write(const char* msg)
 {
+#ifdef NO_BLOCKING_IO
+	return; // completely short circuit to cancel all cases of blocking i/o
+#endif
 	while (tx_buffer.len) usb_poll(); // wait for previous write to finish
 	size_t len = strlen(msg);
 	strncpy(tx_buffer.buffer, msg, TX_BUFFER_SIZE-1);

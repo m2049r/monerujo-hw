@@ -21,7 +21,13 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/spi.h>
+#ifdef STM32F2
 #include <libopencm3/stm32/f2/rng.h>
+#elif defined STM32L4
+#include <libopencm3/stm32/l4/rng.h>
+#else
+	error "STM32 family not defined or not supported."
+#endif
 #include <libopencm3/stm32/crc.h>
 #include "libopencm3/stm32/rng.h"
 
@@ -30,7 +36,14 @@
 void nmi_handler(void)
 {
 	// Clock Security System triggered NMI
+#ifdef STM32F2
 	if ((RCC_CIR & RCC_CIR_CSSF) != 0) {
+#elif defined STM32L4
+	// L4 needs CIFR or rather CICR/CIER?
+	if ((RCC_CIFR & RCC_CIFR_CSSF) != 0) {
+#else
+	error "STM32 family not defined or not supported."
+#endif
 		//	TODO: Clock instability
 		for (;;) {} // loop forever
 	}
@@ -45,9 +58,11 @@ void setup(void)
 	// STM32F2 series MCUs are r2p0 and always have this bit set on reset already.
 	SCB_CCR |= SCB_CCR_STKALIGN;
 
+#ifdef STM32F2
 	// setup clock
 	struct rcc_clock_scale clock = rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_120MHZ];
 	rcc_clock_setup_hse_3v3(&clock);
+#endif
 
 	// enable GPIO clocks - A (oled), B(oled), C (buttons)
 	rcc_periph_clock_enable(RCC_GPIOA);
@@ -86,7 +101,13 @@ void setup(void)
 	gpio_set_af(GPIOA, GPIO_AF5, GPIO5 | GPIO7);
 
 //	spi_disable_crc(SPI1);
+#ifdef STM32F2
 	spi_init_master(SPI1, SPI_CR1_BAUDRATE_FPCLK_DIV_8, SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE, SPI_CR1_CPHA_CLK_TRANSITION_1, SPI_CR1_DFF_8BIT, SPI_CR1_MSBFIRST);
+#elif defined STM32L4
+	spi_init_master(SPI1, SPI_CR1_BAUDRATE_FPCLK_DIV_8, SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE, SPI_CR1_CPHA_CLK_TRANSITION_1, SPI_CR1_MSBFIRST);
+#else
+	error "STM32 family not defined or not supported."
+#endif
 	spi_enable_ss_output(SPI1);
 //	spi_enable_software_slave_management(SPI1);
 //	spi_set_nss_high(SPI1);
@@ -115,5 +136,11 @@ void setupApp(void)
 
 	// hotfix for old bootloader
 	gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO9);
+#ifdef STM32F2
 	spi_init_master(SPI1, SPI_CR1_BAUDRATE_FPCLK_DIV_8, SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE, SPI_CR1_CPHA_CLK_TRANSITION_1, SPI_CR1_DFF_8BIT, SPI_CR1_MSBFIRST);
+#elif defined STM32L4
+	spi_init_master(SPI1, SPI_CR1_BAUDRATE_FPCLK_DIV_8, SPI_CR1_CPOL_CLK_TO_0_WHEN_IDLE, SPI_CR1_CPHA_CLK_TRANSITION_1, SPI_CR1_MSBFIRST);
+#else
+	error "STM32 family not defined or not supported."
+#endif
 }
