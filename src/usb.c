@@ -281,8 +281,15 @@ static usbd_device *usbd_dev;
 void usb_setup(void)
 {
 	// setup of ports was done in setup.c
+#ifdef STM32F2
 	usbd_dev = usbd_init(&otgfs_usb_driver, &dev, &config, usb_strings,
 			3, usbd_control_buffer, sizeof(usbd_control_buffer));
+#elif defined STM32L4
+	usbd_dev = usbd_init(&st_usbfs_v2_usb_driver, &dev, &config, usb_strings,
+			3, usbd_control_buffer, sizeof(usbd_control_buffer));
+#else
+	error "STM32 family not defined or not supported."
+#endif
 	usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
 }
 
