@@ -54,4 +54,5 @@ OBJS		+= src/qrcode/qrcodegen.o
 OPENCM3_DIR=libopencm3
 LDSCRIPT = $(BINARY).ld
 
+#include libopencm3.targl4.mk
 include libopencm3.target.mk
